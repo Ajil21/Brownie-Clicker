@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cookie Clicker Speed Test — ajil21</title>
+  <meta name="description"
+    content="A recreation of Riimu's Cookie Clicker Clicking Speed Test by ajil21. Test your CPS, track sprints, and see your Brownie earnings." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    /* ===== RESET ===== */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-0: #0d0d0d;
+      --bg-1: #151515;
+      --bg-2: #1e1e1e;
+      --bg-3: #282828;
+      --text: #eaeaea;
+      --text-dim: #888;
+      --gold: #e2b33e;
+      --gold-soft: rgba(226, 179, 62, 0.12);
+      --gold-glow: rgba(226, 179, 62, 0.4);
+      --border: rgba(255, 255, 255, 0.06);
+      --radius: 14px;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-0);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: var(--gold);
+      color: var(--bg-0);
+    }
+
+    /* ===== LAYOUT ===== */
+    .app {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      text-align: center;
+      margin-bottom: 2.75rem;
+    }
+
+    .header__brand {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--gold);
+      margin-bottom: 0.6rem;
+    }
+
+    .header__title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.15;
+    }
+
+    .header__sub {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ===== CLICK TARGET ===== */
+    .target-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2.25rem;
+    }
+
+    .target {
+      --size: 190px;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.85);
+      background: transparent;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: border-color 0.15s, box-shadow 0.25s;
+      position: relative;
+    }
+
+    .target:hover {
+      border-color: var(--gold);
+    }
+
+    .target.is-active {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 6px var(--gold-soft), 0 0 40px var(--gold-glow);
+    }
+
+    .target__label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .target.is-active .target__label {
+      color: var(--gold);
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      opacity: 0.55;
+      text-align: center;
+    }
+
+    /* ===== STATS ===== */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 0.6rem;
+      text-align: center;
+    }
+
+    .stat__label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-dim);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat__val {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--gold);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    /* ===== SECTION TITLE ===== */
+    .section-head {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .section-head::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+
+    /* ===== CHART ===== */
+    .chart-wrap {
+      margin-bottom: 2rem;
+    }
+
+    .chart-box {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      height: 255px;
+      position: relative;
+    }
+
+    /* ===== BROWNIE MATH ===== */
+    .brownie-wrap {
+      margin-bottom: 2rem;
+    }
+
+    .brownie-card {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+    }
+
+    .brownie-card p {
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--text-dim);
+    }
+
+    .brownie-card .hl {
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .brownie-card .mn {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .brownie-placeholder {
+      text-align: center;
+      padding: 1.4rem;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      opacity: 0.5;
+    }
+
+    /* ===== HISTORY TABLE ===== */
+    .history-wrap {
+      margin-bottom: 2rem;
+    }
+
+    .table-box {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    thead {
+      background: var(--bg-2);
+    }
+
+    th {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.62rem;
+      letter-spacing: 1.2px;
+      color: var(--text-dim);
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+
+    td {
+      padding: 0.65rem 1rem;
+      border-top: 1px solid var(--border);
+      font-variant-numeric: tabular-nums;
+    }
+
+    tbody tr {
+      transition: background 0.12s;
+    }
+
+    tbody tr:hover {
+      background: var(--gold-soft);
+    }
+
+    .table-empty {
+      text-align: center;
+      padding: 1.4rem;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      opacity: 0.5;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    footer span {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .header__title {
+        font-size: 1.6rem;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .target {
+        --size: 155px;
+      }
+
+      .stat__val {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header__brand">Brownie</div>
+      <h1 class="header__title">Clicking Speed Test</h1>
+      <p class="header__sub">A recreation of Riimu's Cookie Clicker Speed Test</p>
+    </header>
+
+    <!-- CLICK TARGET -->
+    <div class="target-wrap">
+      <div class="target" id="target" role="button" tabindex="0" aria-label="Click to test speed">
+        <span class="target__label">Click</span>
+      </div>
+      <span class="hint" id="hint">Click the circle to start a sprint</span>
+    </div>
+
+    <!-- LIVE STATS -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat__label">CPS</div>
+        <div class="stat__val" id="s-cps">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="stat__label">Max CPS</div>
+        <div class="stat__val" id="s-max">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="stat__label">Clicks</div>
+        <div class="stat__val" id="s-clicks">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat__label">Time</div>
+        <div class="stat__val" id="s-time">0.00s</div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-wrap">
+      <div class="section-head">Click Speed Chart</div>
+      <div class="chart-box"><canvas id="chart"></canvas></div>
+    </div>
+
+    <!-- BROWNIE MATH -->
+    <div class="brownie-wrap">
+      <div class="section-head">Brownie Math</div>
+      <div class="brownie-card" id="brownie">
+        <p class="brownie-placeholder">Complete a sprint to see your Brownie earnings 🍫</p>
+      </div>
+    </div>
+
+    <!-- SPRINT HISTORY -->
+    <div class="history-wrap">
+      <div class="section-head">Sprint History</div>
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr>
+              <th>Sprint</th>
+              <th>Duration</th>
+              <th>Clicks</th>
+              <th>Avg CPS</th>
+              <th>Max CPS</th>
+            </tr>
+          </thead>
+          <tbody id="history">
+            <tr>
+              <td colspan="5" class="table-empty">No sprints yet — start clicking!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      Recreation by <span>ajil21</span> &middot;
+      Original concept by Riimu
+    </footer>
+
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      /* === DOM === */
+      const el = {
+        target: document.getElementById('target'),
+        hint: document.getElementById('hint'),
+        cps: document.getElementById('s-cps'),
+        max: document.getElementById('s-max'),
+        clicks: document.getElementById('s-clicks'),
+        time: document.getElementById('s-time'),
+        brownie: document.getElementById('brownie'),
+        history: document.getElementById('history'),
+        canvas: document.getElementById('chart'),
+      };
+
+      /* === CONSTANTS === */
+      const IDLE_MS = 2000;
+      const WINDOW_MS = 1000;
+      const TICK_MS = 200;
+
+      /* === STATE === */
+      let active = false;
+      let stamps = [];
+      let t0 = 0;
+      let peak = 0;
+      let sprintN = 0;
+      let idleTimer = null;
+      let tickTimer = null;
+      const runs = [];
+
+      /* === CHART === */
+      const cData = {
+        labels: [], datasets: [{
+          label: 'CPS',
+          data: [],
+          borderColor: '#e2b33e',
+          backgroundColor: 'rgba(226,179,62,0.06)',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHitRadius: 8,
+          tension: 0.35,
+          fill: true,
+        }]
+      };
+
+      const chart = new Chart(el.canvas, {
+        type: 'line',
+        data: cData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          interaction: { intersect: false, mode: 'index' },
+          scales: {
+            x: {
+              title: { display: true, text: 'Time (s)', color: '#888', font: { family: 'Inter', size: 11 } },
+              ticks: { color: '#888', font: { family: 'Inter', size: 10 }, maxTicksLimit: 14 },
+              grid: { color: 'rgba(255,255,255,0.04)' },
+            },
+            y: {
+              title: { display: true, text: 'CPS', color: '#888', font: { family: 'Inter', size: 11 } },
+              ticks: { color: '#888', font: { family: 'Inter', size: 10 } },
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              beginAtZero: true,
+              suggestedMax: 15,
+            },
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e1e1e',
+              titleColor: '#eaeaea',
+              bodyColor: '#e2b33e',
+              borderColor: 'rgba(255,255,255,0.08)',
+              borderWidth: 1,
+              callbacks: { label: c => c.parsed.y.toFixed(1) + ' CPS' },
+            },
+          },
+        },
+      });
+
+      /* === UTILS === */
+      const now = () => performance.now();
+      const fmt = (n, d = 1) => n.toFixed(d);
+
+      function cps() {
+        const t = now();
+        const edge = t - WINDOW_MS;
+        let c = 0;
+        for (let i = stamps.length - 1; i >= 0; i--) {
+          if (stamps[i] >= edge) c++; else break;
+        }
+        return c;
+      }
+
+      function elapsed() { return (now() - t0) / 1000; }
+
+      /* === RENDER === */
+      function updateStats() {
+        const c = cps();
+        if (c > peak) peak = c;
+        el.cps.textContent = fmt(c);
+        el.max.textContent = fmt(peak);
+        el.clicks.textContent = stamps.length;
+        el.time.textContent = fmt(elapsed(), 2) + 's';
+      }
+
+      function tick() {
+        if (!active) return;
+        updateStats();
+        cData.labels.push(fmt(elapsed(), 1));
+        cData.datasets[0].data.push(cps());
+        chart.update('none');
+      }
+
+      /* === SPRINT === */
+      function start() {
+        active = true;
+        stamps = [];
+        t0 = now();
+        peak = 0;
+        cData.labels.length = 0;
+        cData.datasets[0].data.length = 0;
+        chart.update('none');
+        el.target.classList.add('is-active');
+        el.hint.textContent = 'Sprint active — stop for 2s to end';
+        tickTimer = setInterval(tick, TICK_MS);
+      }
+
+      function end() {
+        active = false;
+        clearInterval(tickTimer);
+        clearTimeout(idleTimer);
+        el.target.classList.remove('is-active');
+
+        const n = stamps.length;
+        const dur = (stamps[n - 1] - t0) / 1000;
+        const avg = dur > 0 ? n / dur : 0;
+
+        sprintN++;
+        const run = { num: sprintN, dur, clicks: n, avg, peak };
+        runs.push(run);
+
+        renderBrownie(run);
+        renderHistory();
+
+        el.cps.textContent = '0.0';
+        el.time.textContent = fmt(dur, 2) + 's';
+        el.hint.textContent = `Sprint #${sprintN} done — click to go again`;
+      }
+
+      /* === CLICK === */
+      function onClick(e) {
+        e.preventDefault();
+        if (!active) start();
+        stamps.push(now());
+        updateStats();
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(end, IDLE_MS);
+      }
+
+      el.target.addEventListener('pointerdown', onClick);
+      el.target.addEventListener('contextmenu', e => e.preventDefault());
+
+      /* === BROWNIE MATH === */
+      function renderBrownie(r) {
+        const b = r.clicks;
+        el.brownie.innerHTML = `<p>
+        In your last sprint you clicked <span class="hl">${r.clicks}</span> times
+        in <span class="hl">${fmt(r.dur, 2)}s</span>.<br>
+        Average: <span class="hl">${fmt(r.avg)}</span> CPS &middot;
+        Peak: <span class="hl">${fmt(r.peak)}</span> CPS<br><br>
+        At 1 Brownie per click, you earned <span class="hl">${b.toLocaleString()}</span> Brownies 🍫<br><br>
+        That pace would have earned you:<br>
+        &bull; <span class="hl">${(b * 7).toLocaleString()}</span> during
+          <span class="mn">Frenzy</span> (7&times;)<br>
+        &bull; <span class="hl">${(b * 777).toLocaleString()}</span> during
+          <span class="mn">Clicking Frenzy</span> (777&times;)<br>
+        &bull; <span class="hl">${(b * 666).toLocaleString()}</span> during
+          <span class="mn">Elder Wrath</span> (666&times;)
+      </p>`;
+      }
+
+      /* === HISTORY === */
+      function renderHistory() {
+        el.history.innerHTML = runs.slice().reverse().map(r => `<tr>
+        <td>#${r.num}</td>
+        <td>${fmt(r.dur, 2)}s</td>
+        <td>${r.clicks}</td>
+        <td>${fmt(r.avg)}</td>
+        <td>${fmt(r.peak)}</td>
+      </tr>`).join('');
+      }
+    })();
+  </script>
+</body>
+
+</html>
