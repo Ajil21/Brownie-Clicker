@@ -1,1 +1,1 @@
-A Simple recreation of OG Cookie Riimu Clicker Optimizer
+Recreated one of my favourite websites to  test my Clicks Per Second
