@@ -1,1 +1,1 @@
-A Simple recreation of Cookie Riimu Clicker Optimizer
+A Simple recreation of OG Cookie Riimu Clicker Optimizer
